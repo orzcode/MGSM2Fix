@@ -664,7 +664,7 @@ void *LoadImage(void *dst, void *src, size_t num)
     return memmove(dst, src, num);
 }
 
-SQInteger MGS1_PlaySide = 0;
+SQInteger MGS1_PlaySide;
 SQInteger SQReturn_set_playside_mgs(HSQUIRRELVM v)
 {
     SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
@@ -828,9 +828,7 @@ SQInteger SQReturn_setSmoothing(HSQUIRRELVM v)
 
 SQInteger _SQReturn_set_disk_patch(HSQUIRRELVM v)
 {
-    extern bool Ketchup_Process(HSQUIRRELVM v);
-    gEmuTask.SetVM(v);
-    Ketchup_Process(v);
+    // Used to run Ketchup here...
     return 0;
 }
 
@@ -867,7 +865,22 @@ SQInteger SQReturn_set_game_regionTag(HSQUIRRELVM v)
     return 0;
 }
 
-array<pair<const SQChar *, SQFUNCTION>, 9> M2_ReturnTable = {
+SQInteger SQReturn_conv_checked_path(HSQUIRRELVM v)
+{
+    SQVM::CallInfo &my = v->_callsstack[v->_callsstacksize - 1];
+    SQObjectPtr obj = v->_stack._vals[v->_stackbase - my._prevstkbase + 1];
+
+    string path(_stringval(obj));
+    if (path == "config/title_patchdata.psb") {
+        extern bool Ketchup_Process(HSQUIRRELVM v);
+        gEmuTask.SetVM(v);
+        Ketchup_Process(v);
+    }
+
+    return 0;
+}
+
+array<pair<const SQChar *, SQFUNCTION>, 10> M2_ReturnTable = {
     make_pair("init_system_1st", SQReturn_init_system_1st),
     make_pair("init_system_last", SQReturn_init_system_last),
     make_pair("set_playside_mgs", SQReturn_set_playside_mgs),
@@ -877,6 +890,7 @@ array<pair<const SQChar *, SQFUNCTION>, 9> M2_ReturnTable = {
     make_pair("_get_disk_path", _SQReturn_get_disk_path),
     make_pair("set_current_title_dev_id", SQReturn_set_current_title_dev_id),
     make_pair("set_game_regionTag", SQReturn_set_game_regionTag),
+    make_pair("conv_checked_path", SQReturn_conv_checked_path),
 };
 
 void FixLoop(HSQUIRRELVM v, SQInteger event_type, const SQChar *src, const SQChar *name, SQInteger line)

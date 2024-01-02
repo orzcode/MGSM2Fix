@@ -34,7 +34,7 @@ constexpr unsigned int gSectorRange = gSectorSize + gSectorStride;
 
 auto cRange = [](unsigned int size) constexpr -> unsigned int
 {
-	return (size / gSectorSize) * (gSectorSize + gSectorStride);
+	return (size / gSectorSize) * gSectorRange;
 };
 
 vector<Ketchup_TitleInfo> gTitles = {
@@ -122,7 +122,8 @@ bool Ketchup_ApplyBlock(HSQUIRRELVM v,
 			if (pos < gSectorSize) {
 				address = (sector * gSectorSize) + pos;
 				gEmuTask.SetRamValue(CHAR_BIT, gImageBase + address, *data);
-				LOG_F(INFO, "Ketchup: Mapped RAM write 0x%08X [0x%08" PRIX64 "] with value 0x%02X.", address, offset, *data);
+				LOG_F(INFO, "Ketchup: Mapped RAM write 0x%08X [0x%08" PRIX64 "] with value 0x%02X.",
+					gImageBase + address, offset, *data);
 			}
 		}
 
